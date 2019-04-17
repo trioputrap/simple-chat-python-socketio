@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Simple Python Web Chat</title>
+    <link href="https://fonts.googleapis.com/css?family=Roboto" rel="stylesheet">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.4/jquery.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/1.7.3/socket.io.min.js"></script>
+    <style>
+        * { box-sizing: border-box; font-family: 'Roboto', sans-serif; padding: 0; margin: 0;}
+
+        .container {
+            margin: 0 auto;
+            background: #EDEDED;
+            width: 400px;
+            height: 100vh;
+        }
+
+        .msg-container{
+            height: calc(100vh - 50px);
+            overflow-y: scroll;
+        }
+
+        .msg-action{
+            height: 50px;
+            background: yellow;
+        }
+
+        .msg-input {
+            max-height: 100%;
+            min-height: 100%;
+            max-width: calc(100% - 75px);
+            min-width: calc(100% - 75px);
+            border: 0;
+            margin: 0;
+            padding: 15px 20px;
+        }
+
+        .msg-button {
+            height: 100%;
+            width: 75px;
+            margin: 0;
+            border: 0;
+            float: right;
+            cursor: pointer;
+        }
+
+        .msg {
+            padding: 10px 20px;
+            position: relative;
+        }
+
+        .msg p {
+            background: #FFF;
+            padding: 10px 20px;
+            display: inline-block;
+            border-radius: 0px 20px 20px 20px;
+        }
+
+
+        .msg h5 { margin-bottom: 5px}
+
+        .bg-blue {
+            background: #137dc3 !important;
+            color: #FFF;
+        }
+
+
+    </style>
+</head>
+<body>
+    <section class="container">
+        <div class="msg-container">
+
+        </div>
+        <div class="msg-action">
+            <textarea id="input-msg" class="msg-input" ></textarea>
+            <button id="send" class="bg-blue msg-button">SEND</button>
+        </div>
+    </section>
+
+    <script>
+      var socket = io.connect('http://' + document.domain + ':' + location.port);
+      socket.on( 'connect', function() {
+        socket.emit( 'new_user', {
+          data: 'User Connected'
+        } )
+        $( '#send' ).on( 'click', function( e ) {
+          let body = $( '#input-msg' ).val()
+          socket.emit( 'new_msg', {
+            msg : body
+          } )
+          $( '#input-msg' ).val( '' ).focus()
+        } )
+      } )
+
+      socket.on( 'new_user_response', function( msg ) {
+        console.log( msg )
+      })
+
+      socket.on( 'new_msg_response', function( res ) {
+        console.log( res )
+        var content = `
+            <div class="msg">
+                <p>`+ res.msg +`</p>
+            </div>
+        `
+        $( 'div.msg-container' ).append(content);
+      })
+
+    </script>
+</body>
+</html>
